@@ -19,6 +19,7 @@ import com.example.madcampweek2.calculate.CalculateActivity
 import com.example.madcampweek2.check.CheckActivity
 import com.example.madcampweek2.makeRoom.HostActivity
 import com.example.madcampweek2.notification.NotificationActivity
+import com.example.madcampweek2.roomList.RoomListActivity
 import com.google.android.material.tabs.TabLayout
 
 class HomeActivity : AppCompatActivity() {
@@ -91,7 +92,7 @@ class HomeActivity : AppCompatActivity() {
 
         val layoutPay: LinearLayout = findViewById(R.id.layoutPay)
         layoutPay.setOnClickListener {
-            navigateToActivity(CheckActivity::class.java)
+            navigateToActivity(RoomListActivity::class.java)
         }
 
         val layoutReceipt: LinearLayout = findViewById(R.id.layoutReceipt)
