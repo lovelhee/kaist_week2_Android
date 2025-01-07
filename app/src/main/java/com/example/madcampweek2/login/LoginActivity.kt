@@ -1,5 +1,6 @@
 package com.example.madcampweek2.login
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -9,12 +10,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.madcampweek2.R
+import com.example.madcampweek2.data.GoogleAuthRequest
+import com.example.madcampweek2.data.GoogleAuthResponse
 import com.example.madcampweek2.home.HomeActivity
+import com.example.madcampweek2.network.ApiClient
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class LoginActivity : AppCompatActivity() {
 
@@ -69,17 +76,56 @@ class LoginActivity : AppCompatActivity() {
 
             // 서버로 ID 토큰 전송
             val idToken = account.idToken
-            sendTokenToServer(idToken)
-
-            // HomeActivity로 이동
-            val intent = Intent(this, HomeActivity::class.java)
-            startActivity(intent)
-            finish()
+            val email = account.email ?: "unknown"
+            if (idToken != null) {
+                sendTokenToServer(idToken, email)
+            } else {
+                Log.e("GoogleSignIn", "ID Token is null")
+            }
         }
     }
 
-    private fun sendTokenToServer(idToken: String?) {
-        // 서버와 연동하여 ID 토큰을 검증하는 코드 작성
-        Log.d("GoogleSignIn", "Token sent to server: $idToken")
+    private fun sendTokenToServer(idToken: String, email: String) {
+        val authService = ApiClient.authService
+        val request = GoogleAuthRequest(gmail = email, token = idToken)
+
+        authService.authenticateWithGoogle(request).enqueue(object : Callback<GoogleAuthResponse> {
+            override fun onResponse(call: Call<GoogleAuthResponse>, response: Response<GoogleAuthResponse>) {
+                if (response.isSuccessful && response.body() != null) {
+                    val authResponse = response.body()
+                    if (authResponse?.status == 200) {
+                        Log.d("GoogleSignIn", "서버 응답: ${authResponse.msg}")
+
+                        // 사용자 정보 저장
+                        saveUserInfo(authResponse.data.user.id.uuid, authResponse.data.user.name, authResponse.data.token)
+
+                        // HomeActivity로 이동
+                        startActivity(Intent(this@LoginActivity, HomeActivity::class.java))
+                        finish()
+                    } else {
+                        Log.e("GoogleSignIn", "로그인 실패: ${authResponse?.msg}")
+                    }
+                } else {
+                    Log.e("GoogleSignIn", "서버 오류: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<GoogleAuthResponse>, t: Throwable) {
+                Log.e("GoogleSignIn", "네트워크 오류: ${t.message}")
+            }
+        })
+    }
+
+    private fun saveUserInfo(uuid: String, name: String, token: String) {
+        val sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+        with(sharedPreferences.edit()) {
+            putString("user_uuid", uuid)
+            putString("user_name", name)
+            Log.d("GoogleSignIn", name)
+            putString("auth_token", token)
+            apply()
+        }
+
+        Log.d("GoogleSignIn", "사용자 정보 저장 완료")
     }
 }
