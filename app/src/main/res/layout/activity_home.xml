@@ -101,6 +101,8 @@
         app:layout_constraintTop_toBottomOf="@+id/toolBar" />
 
     <LinearLayout
+        android:clickable="true"
+        android:focusable="true"
         android:elevation="3dp"
         android:id="@+id/layoutGoN"
         android:layout_width="match_parent"
@@ -133,6 +135,8 @@
     </LinearLayout>
     
     <LinearLayout
+        android:clickable="true"
+        android:focusable="true"
         android:elevation="3dp"
         android:layout_width="160dp"
         android:layout_height="103dp"
@@ -165,6 +169,8 @@
     </LinearLayout>
 
     <LinearLayout
+        android:clickable="true"
+        android:focusable="true"
         android:elevation="3dp"
         android:layout_width="160dp"
         android:layout_height="103dp"

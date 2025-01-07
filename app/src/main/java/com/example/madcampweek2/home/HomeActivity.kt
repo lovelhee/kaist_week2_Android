@@ -1,8 +1,12 @@
 package com.example.madcampweek2.home
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -11,6 +15,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.madcampweek2.R
+import com.example.madcampweek2.calculate.CalculateActivity
+import com.example.madcampweek2.check.CheckActivity
+import com.example.madcampweek2.makeRoom.HostActivity
+import com.example.madcampweek2.notification.NotificationActivity
 import com.google.android.material.tabs.TabLayout
 
 class HomeActivity : AppCompatActivity() {
@@ -68,6 +76,39 @@ class HomeActivity : AppCompatActivity() {
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
         // 여기까지
+
+        // 화면 이동
+        val tvGoN: TextView = findViewById(R.id.tvGoN)
+        val layoutGoN: LinearLayout = findViewById(R.id.layoutGoN)
+        val imgBtnNotifi: ImageView = findViewById(R.id.imgBtnNotifi)
+
+        tvGoN.setOnClickListener {
+            navigateToActivity(HostActivity::class.java)
+        }
+        layoutGoN.setOnClickListener {
+            navigateToActivity(HostActivity::class.java)
+        }
+
+        val layoutPay: LinearLayout = findViewById(R.id.layoutPay)
+        layoutPay.setOnClickListener {
+            navigateToActivity(CheckActivity::class.java)
+        }
+
+        val layoutReceipt: LinearLayout = findViewById(R.id.layoutReceipt)
+        layoutReceipt.setOnClickListener {
+            navigateToActivity(CalculateActivity::class.java)
+        }
+
+        imgBtnNotifi.setOnClickListener {
+            navigateToActivity(NotificationActivity::class.java)
+        }
+        // 여기까지
+    }
+
+    // 화면 이동
+    private fun navigateToActivity(activityClass: Class<*>) {
+        val intent = Intent(this, activityClass)
+        startActivity(intent)
     }
 
     // 더미데이터
