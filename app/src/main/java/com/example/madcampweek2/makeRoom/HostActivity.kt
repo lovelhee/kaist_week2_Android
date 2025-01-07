@@ -1,6 +1,7 @@
 package com.example.madcampweek2.makeRoom
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -28,6 +29,8 @@ import com.example.madcampweek2.R
 import com.example.madcampweek2.home.HomeActivity
 import com.example.madcampweek2.network.AnalyzeReceiptResponse
 import com.example.madcampweek2.network.ApiClient
+import com.example.madcampweek2.network.CreateRoomRequest
+import com.example.madcampweek2.network.CreateRoomResponse
 import com.example.madcampweek2.network.FindUserResponse
 import com.example.madcampweek2.network.ReceiptItem
 import com.example.madcampweek2.network.ReceiptService
@@ -47,7 +50,10 @@ class HostActivity : AppCompatActivity() {
     private lateinit var btnCamera: Button
     private lateinit var btnUpload: Button
     private lateinit var ivReceipt: ImageView
+    private lateinit var btnComplete: Button
     private var imageUrl: String? = null // 서버로 전송할 이미지 URL
+
+    private val friendUuidsMap = mutableMapOf<String, String>()
 
     companion object {
         const val REQUEST_IMAGE_CAPTURE = 1
@@ -71,31 +77,15 @@ class HostActivity : AppCompatActivity() {
 
         btnInvite.setOnClickListener {
             val friendName = etInvite.text.toString()
-
             if (friendName.isNotBlank()) {
-
-                val textView = TextView(this).apply {
-                    text = friendName
-                    textSize = 16f
-                    setTextColor(resources.getColor(android.R.color.black, null))
-                    layoutParams = LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        setMargins(0, 10, 0, 10)
-                    }
-                    gravity = Gravity.START
-                }
-
-                invitedFriendsLayout.addView(textView)
-
-                etInvite.text.clear()
+                checkAndAddFriend(friendName)
             }
         }
 
         ivReceipt = findViewById(R.id.ivReceipt)
         btnCamera = findViewById(R.id.btnCamera)
         btnUpload = findViewById(R.id.btnUpload)
+        btnComplete = findViewById(R.id.btnComplete)
 
         btnCamera.setOnClickListener {
             showImageSelectionDialog()
@@ -105,11 +95,8 @@ class HostActivity : AppCompatActivity() {
             uploadReceiptImage()
         }
 
-        btnInvite.setOnClickListener {
-            val friendName = etInvite.text.toString()
-            if (friendName.isNotBlank()) {
-                checkAndAddFriend(friendName)
-            }
+        btnComplete.setOnClickListener {
+            createRoom()
         }
     }
 
@@ -270,23 +257,19 @@ class HostActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     response.body()?.let { body ->
                         if (body.status == 200) {
-                            // 성공 처리
-                            body.data?.uuid?.uuid?.let {
-                                addFriendToLayout(friendName) // 친구를 레이아웃에 추가
+                            body.data?.uuid?.uuid?.let { uuid ->
+                                Log.d("HostActivity", "친구 초대 성공: 이름 = $friendName, UUID = $uuid")
+                                // UUID를 저장하고 레이아웃에 추가
+                                friendUuidsMap[friendName] = uuid
+                                addFriendToLayout(friendName)
                                 Toast.makeText(this@HostActivity, "사용자가 초대되었습니다.", Toast.LENGTH_SHORT).show()
                             }
-                        } else if (body.status == 500) {
-                            // 실패 처리 (사용자를 찾을 수 없는 경우)
-                            val errorMsg = "사용자를 찾을 수 없습니다."
-                            Toast.makeText(this@HostActivity, errorMsg, Toast.LENGTH_SHORT).show()
                         } else {
-
+                            Toast.makeText(this@HostActivity, "사용자를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } else {
-                    // 서버 상태 코드가 200~299 외일 경우
-                    val errorBody = response.errorBody()?.string() ?: "알 수 없는 오류 발생"
-                    Toast.makeText(this@HostActivity, "오류: $errorBody", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@HostActivity, "오류: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -295,7 +278,6 @@ class HostActivity : AppCompatActivity() {
             }
         })
     }
-
 
     private fun addFriendToLayout(friendName: String) {
         val invitedFriendsLayout: LinearLayout = findViewById(R.id.invitedFriendsLayout)
@@ -314,6 +296,77 @@ class HostActivity : AppCompatActivity() {
         }
 
         invitedFriendsLayout.addView(textView)
+    }
+
+    private fun createRoom() {
+        val etTitle: EditText = findViewById(R.id.etTitle)
+        val roomTitle = etTitle.text.toString()
+
+        if (roomTitle.isBlank()) {
+            Toast.makeText(this, "방 제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+        val hostUuid = sharedPreferences.getString("user_uuid", null)
+        if (hostUuid == null) {
+            Toast.makeText(this, "로그인 정보가 없습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val friendUuids = getFriendUuids()
+        if (friendUuids.isEmpty()) {
+            Toast.makeText(this, "초대할 친구를 추가해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val items = getAnalyzedItems()
+        val totalPrice = calculateTotalPrice(items)
+
+        val request = CreateRoomRequest(
+            title = roomTitle,
+            host_uuid = hostUuid,
+            friend_uuids = friendUuids,
+            items = items,
+            total_price = totalPrice
+        )
+
+        val service = ApiClient.retrofit.create(ReceiptService::class.java)
+        service.createRoom(request).enqueue(object : Callback<CreateRoomResponse> {
+            override fun onResponse(call: Call<CreateRoomResponse>, response: Response<CreateRoomResponse>) {
+                if (response.isSuccessful && response.body()?.status == 201) {
+                    val roomId = response.body()?.data?.roomId
+                    Toast.makeText(this@HostActivity, "방이 성공적으로 생성되었습니다. 방 ID: $roomId", Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    val errorMsg = response.body()?.msg ?: "방 생성 실패"
+                    Toast.makeText(this@HostActivity, errorMsg, Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<CreateRoomResponse>, t: Throwable) {
+                Toast.makeText(this@HostActivity, "서버 연결 실패: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun getFriendUuids(): List<String> {
+        return friendUuidsMap.values.toList() // 저장된 UUID 리스트 반환
+    }
+
+    private fun getAnalyzedItems(): List<Map<String, String>> {
+        val items = mutableListOf<Map<String, String>>()
+        // 영수증 분석 결과를 리스트로 반환
+        return items
+    }
+
+    private fun calculateTotalPrice(items: List<Map<String, String>>): String {
+        var total = 0
+        for (item in items) {
+            val price = item["price"]?.replace(",", "")?.toIntOrNull() ?: 0
+            total += price
+        }
+        return total.toString()
     }
 
 }
