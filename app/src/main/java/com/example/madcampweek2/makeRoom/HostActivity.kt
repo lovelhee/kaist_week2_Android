@@ -28,8 +28,10 @@ import com.example.madcampweek2.R
 import com.example.madcampweek2.home.HomeActivity
 import com.example.madcampweek2.network.AnalyzeReceiptResponse
 import com.example.madcampweek2.network.ApiClient
+import com.example.madcampweek2.network.FindUserResponse
 import com.example.madcampweek2.network.ReceiptItem
 import com.example.madcampweek2.network.ReceiptService
+import com.example.madcampweek2.network.UserService
 import com.google.gson.Gson
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -101,6 +103,13 @@ class HostActivity : AppCompatActivity() {
 
         btnUpload.setOnClickListener {
             uploadReceiptImage()
+        }
+
+        btnInvite.setOnClickListener {
+            val friendName = etInvite.text.toString()
+            if (friendName.isNotBlank()) {
+                checkAndAddFriend(friendName)
+            }
         }
     }
 
@@ -251,4 +260,60 @@ class HostActivity : AppCompatActivity() {
         cursor?.close()
         return path ?: ""
     }
+
+    private fun checkAndAddFriend(friendName: String) {
+        val service = ApiClient.retrofit.create(UserService::class.java)
+        val call = service.findUserByName(friendName)
+
+        call.enqueue(object : Callback<FindUserResponse> {
+            override fun onResponse(call: Call<FindUserResponse>, response: Response<FindUserResponse>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { body ->
+                        if (body.status == 200) {
+                            // 성공 처리
+                            body.data?.uuid?.uuid?.let {
+                                addFriendToLayout(friendName) // 친구를 레이아웃에 추가
+                                Toast.makeText(this@HostActivity, "사용자가 초대되었습니다.", Toast.LENGTH_SHORT).show()
+                            }
+                        } else if (body.status == 500) {
+                            // 실패 처리 (사용자를 찾을 수 없는 경우)
+                            val errorMsg = "사용자를 찾을 수 없습니다."
+                            Toast.makeText(this@HostActivity, errorMsg, Toast.LENGTH_SHORT).show()
+                        } else {
+
+                        }
+                    }
+                } else {
+                    // 서버 상태 코드가 200~299 외일 경우
+                    val errorBody = response.errorBody()?.string() ?: "알 수 없는 오류 발생"
+                    Toast.makeText(this@HostActivity, "오류: $errorBody", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<FindUserResponse>, t: Throwable) {
+                Toast.makeText(this@HostActivity, "서버 연결 실패: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+
+    private fun addFriendToLayout(friendName: String) {
+        val invitedFriendsLayout: LinearLayout = findViewById(R.id.invitedFriendsLayout)
+
+        val textView = TextView(this).apply {
+            text = friendName
+            textSize = 16f
+            setTextColor(resources.getColor(android.R.color.black, null))
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(0, 10, 0, 10)
+            }
+            gravity = Gravity.START
+        }
+
+        invitedFriendsLayout.addView(textView)
+    }
+
 }

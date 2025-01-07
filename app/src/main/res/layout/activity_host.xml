@@ -89,35 +89,28 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <EditText
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/layoutInvite"
-            app:layout_constraintTop_toBottomOf="@+id/invitedFriendsLayout"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            android:textSize="15sp"
+            android:id="@+id/etInvite"
             android:layout_marginStart="35dp"
-            android:orientation="horizontal"
-            android:layout_marginEnd="35dp">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/invitedFriendsLayout"
+            android:hint="초대할 친구 입력"/>
 
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:id="@+id/etInvite"
-                android:hint="초대할 친구 입력"/>
-
-            <Button
-                android:layout_marginStart="140dp"
-                android:id="@+id/btnInvite"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="초대"
-                android:textSize="15sp"
-                android:backgroundTint="@color/main_purple"
-                android:textColor="@android:color/white"
-                android:gravity="center" />
-        </LinearLayout>
+        <Button
+            android:id="@+id/btnInvite"
+            android:layout_marginEnd="35dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/main_purple"
+            android:gravity="center"
+            android:text="초대"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/invitedFriendsLayout" />
 
         <TextView
             android:id="@+id/tvCamera"
@@ -130,7 +123,7 @@
             android:layout_marginTop="30dp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/layoutInvite" />
+            app:layout_constraintTop_toBottomOf="@+id/btnInvite" />
 
         <ImageView
             android:id="@+id/ivReceipt"
