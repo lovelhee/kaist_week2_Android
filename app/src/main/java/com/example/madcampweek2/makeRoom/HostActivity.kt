@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.madcampweek2.R
+import com.example.madcampweek2.check.CheckActivity
 import com.example.madcampweek2.home.HomeActivity
 import com.example.madcampweek2.network.AnalyzeReceiptResponse
 import com.example.madcampweek2.network.ApiClient
@@ -52,6 +53,7 @@ class HostActivity : AppCompatActivity() {
     private lateinit var ivReceipt: ImageView
     private lateinit var btnComplete: Button
     private var imageUrl: String? = null // 서버로 전송할 이미지 URL
+    private var totalPrice: String = "0"
 
     private val friendUuidsMap = mutableMapOf<String, String>()
 
@@ -191,11 +193,12 @@ class HostActivity : AppCompatActivity() {
                 ) {
                     if (response.isSuccessful) {
                         response.body()?.data?.let { data ->
-                            showAnalysisResults(data.items)
+                            showAnalysisResults(data.items, data.total_price)
                         }
                     } else {
                         // 서버가 반환한 오류 메시지 출력
                         val errorBody = response.errorBody()?.string()
+                        Log.e("HostActivity", "analyzeReceipt 실패: ${response.code()}, ${response.errorBody()?.string()}")
                         Toast.makeText(
                             this@HostActivity,
                             "분석 실패: ${response.code()} - $errorBody",
@@ -222,15 +225,29 @@ class HostActivity : AppCompatActivity() {
     }
 
 
-    private fun showAnalysisResults(items: List<ReceiptItem>) {
+    private var analyzedItems: List<Map<String, String>> = listOf()
+
+    private fun showAnalysisResults(items: List<ReceiptItem>, totalPrice: String) {
         val adapter = HostMenuAdapter(items)
         val recyclerView: RecyclerView = findViewById(R.id.rvMenu)
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        // 결과 저장 (로컬 파일로 저장)
+        // 분석 결과 저장
+        analyzedItems = items.map { item ->
+            mapOf(
+                "menu" to item.menu,
+                "details" to item.details,
+                "price" to item.price
+            )
+        }
+
+        // total_price 저장
+        this.totalPrice = totalPrice
+
         saveAnalysisResults(items)
     }
+
 
     private fun saveAnalysisResults(items: List<ReceiptItem>) {
         val json = Gson().toJson(items)
@@ -264,12 +281,14 @@ class HostActivity : AppCompatActivity() {
                                 addFriendToLayout(friendName)
                                 Toast.makeText(this@HostActivity, "사용자가 초대되었습니다.", Toast.LENGTH_SHORT).show()
                             }
-                        } else {
+                        } else if (body.status == 500) {
                             Toast.makeText(this@HostActivity, "사용자를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+                        } else {
+
                         }
                     }
                 } else {
-                    Toast.makeText(this@HostActivity, "오류: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@HostActivity, "사용자를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -320,8 +339,28 @@ class HostActivity : AppCompatActivity() {
             return
         }
 
-        val items = getAnalyzedItems()
-        val totalPrice = calculateTotalPrice(items)
+        val items = getAnalyzedItems().map { item ->
+            // price에서 쉼표(,)와 '원' 제거
+            val cleanedPrice = item["price"]?.replace(",", "")?.replace("원", "") ?: "0"
+            item.toMutableMap().apply {
+                this["price"] = cleanedPrice // 수정된 가격 반영
+            }
+        }
+
+        if (items.isEmpty()) {
+            Toast.makeText(this, "영수증 분석 결과가 없습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        Log.d("HostActivity", """
+        방 생성 데이터:
+        - 방 제목: $roomTitle
+        - 방장 UUID: $hostUuid
+        - 친구 UUID 목록: ${friendUuids.joinToString(", ")}
+        - 영수증 분석 아이템:
+        ${items.joinToString("\n") { item -> "  - ${item["menu"]}: ${item["price"]}" }}
+        - 총 가격: $totalPrice
+    """.trimIndent())
 
         val request = CreateRoomRequest(
             title = roomTitle,
@@ -334,12 +373,18 @@ class HostActivity : AppCompatActivity() {
         val service = ApiClient.retrofit.create(ReceiptService::class.java)
         service.createRoom(request).enqueue(object : Callback<CreateRoomResponse> {
             override fun onResponse(call: Call<CreateRoomResponse>, response: Response<CreateRoomResponse>) {
+                Log.d("HostActivity", "Response Code: ${response.code()}, Body: ${response.body()}")
                 if (response.isSuccessful && response.body()?.status == 201) {
                     val roomId = response.body()?.data?.roomId
                     Toast.makeText(this@HostActivity, "방이 성공적으로 생성되었습니다. 방 ID: $roomId", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this@HostActivity, CheckActivity::class.java).apply {
+                        putExtra("roomId", roomId)
+                    }
+                    startActivity(intent)
                     finish()
                 } else {
-                    val errorMsg = response.body()?.msg ?: "방 생성 실패"
+                    val errorMsg = response.body()?.msg ?: "방 생성 실패: ${response.code()}"
+                    Log.e("HostActivity", "Error Response: ${response.errorBody()?.string()}")
                     Toast.makeText(this@HostActivity, errorMsg, Toast.LENGTH_SHORT).show()
                 }
             }
@@ -355,9 +400,7 @@ class HostActivity : AppCompatActivity() {
     }
 
     private fun getAnalyzedItems(): List<Map<String, String>> {
-        val items = mutableListOf<Map<String, String>>()
-        // 영수증 분석 결과를 리스트로 반환
-        return items
+        return analyzedItems
     }
 
     private fun calculateTotalPrice(items: List<Map<String, String>>): String {
