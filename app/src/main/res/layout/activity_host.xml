@@ -68,7 +68,7 @@
         android:text="초대할 친구"
         android:textColor="@color/black"
         android:textSize="25sp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="30dp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/etTitle" />
@@ -123,7 +123,7 @@
         android:text="영수증 촬영"
         android:textColor="@color/black"
         android:textSize="25sp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="30dp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/layoutInvite" />
@@ -135,7 +135,8 @@
         android:layout_marginStart="35dp"
         android:layout_marginEnd="35dp"
         android:layout_marginTop="10dp"
-        android:visibility="gone"
+        android:visibility="visible"
+        android:scaleType="centerCrop"
         android:background="@drawable/rounded_camera_background"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvCamera" />
@@ -145,8 +146,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:backgroundTint="@color/main_purple"
-        android:text="촬영하기"
+        android:text="영수증 업로드"
         android:textSize="15sp"
+        android:layout_marginStart="35dp"
+        android:layout_marginEnd="35dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ivReceipt" />
+
+    <Button
+        android:id="@+id/btnUpload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/main_purple"
+        android:text="영수증 분석하기"
+        android:textSize="15sp"
+        android:visibility="gone"
         android:layout_marginStart="35dp"
         android:layout_marginEnd="35dp"
         android:layout_marginTop="10dp"
@@ -159,10 +175,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="35dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="90dp"
         android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnCamera">
+        app:layout_constraintTop_toBottomOf="@+id/ivReceipt">
 
         <TextView
             android:layout_width="wrap_content"
@@ -228,16 +244,17 @@
         tools:itemCount="3" />
 
     <Button
+        android:id="@+id/btnComplete"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="완료"
-        android:id="@+id/btnComplete"
-        android:textSize="20sp"
         android:layout_margin="20dp"
-        android:padding="10dp"
+        android:layout_marginTop="30dp"
         android:backgroundTint="@color/main_purple"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:padding="10dp"
+        android:text="완료"
+        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/rvMenu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

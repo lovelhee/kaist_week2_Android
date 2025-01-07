@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    id("kotlin-kapt")
 }
 
 android {
@@ -36,6 +37,10 @@ android {
 }
 
 dependencies {
+
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    kapt("com.github.bumptech.glide:compiler:4.15.1")
+
     implementation("com.squareup.retrofit2:retrofit:2.9.0") // Retrofit 라이브러리
     implementation("com.squareup.retrofit2:converter-gson:2.9.0") // Gson 변환기
 
