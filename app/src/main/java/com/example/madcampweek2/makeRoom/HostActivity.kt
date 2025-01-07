@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -14,14 +15,30 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.madcampweek2.R
 import com.example.madcampweek2.home.HomeActivity
+import com.example.madcampweek2.network.AnalyzeReceiptResponse
+import com.example.madcampweek2.network.ApiClient
+import com.example.madcampweek2.network.ReceiptItem
+import com.example.madcampweek2.network.ReceiptService
+import com.google.gson.Gson
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.File
 
 class HostActivity : AppCompatActivity() {
 
@@ -80,6 +97,10 @@ class HostActivity : AppCompatActivity() {
 
         btnCamera.setOnClickListener {
             showImageSelectionDialog()
+        }
+
+        btnUpload.setOnClickListener {
+            uploadReceiptImage()
         }
     }
 
@@ -148,5 +169,86 @@ class HostActivity : AppCompatActivity() {
     private fun getImageUriFromBitmap(bitmap: Bitmap): Uri {
         val path = MediaStore.Images.Media.insertImage(contentResolver, bitmap, "ReceiptImage", null)
         return Uri.parse(path)
+    }
+
+    // 여기부터 영수증 분석
+    private fun uploadReceiptImage() {
+        imageUrl?.let { imageUrlString ->
+            // String을 Uri로 변환
+            val uri = Uri.parse(imageUrlString)
+
+            // Uri를 File 객체로 변환
+            val file = getFileFromUri(uri)
+
+            // File 객체를 RequestBody로 변환
+            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+
+            // MultipartBody.Part 객체 생성 (필드 이름: "file")
+            val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
+
+            // Retrofit API 호출
+            val service = ApiClient.retrofit.create(ReceiptService::class.java)
+            service.analyzeReceipt(body).enqueue(object : Callback<AnalyzeReceiptResponse> {
+                override fun onResponse(
+                    call: Call<AnalyzeReceiptResponse>,
+                    response: Response<AnalyzeReceiptResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        response.body()?.data?.let { data ->
+                            showAnalysisResults(data.items)
+                        }
+                    } else {
+                        // 서버가 반환한 오류 메시지 출력
+                        val errorBody = response.errorBody()?.string()
+                        Toast.makeText(
+                            this@HostActivity,
+                            "분석 실패: ${response.code()} - $errorBody",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<AnalyzeReceiptResponse>, t: Throwable) {
+                    Toast.makeText(this@HostActivity, "분석 실패: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+    }
+
+    // Uri를 File 객체로 변환
+    private fun getFileFromUri(uri: Uri): File {
+        val inputStream = contentResolver.openInputStream(uri)
+        val tempFile = File(cacheDir, "tempImage.jpg") // 임시 파일 생성
+        tempFile.outputStream().use { outputStream ->
+            inputStream?.copyTo(outputStream) // 파일 복사
+        }
+        return tempFile
+    }
+
+
+    private fun showAnalysisResults(items: List<ReceiptItem>) {
+        val adapter = HostMenuAdapter(items)
+        val recyclerView: RecyclerView = findViewById(R.id.rvMenu)
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        // 결과 저장 (로컬 파일로 저장)
+        saveAnalysisResults(items)
+    }
+
+    private fun saveAnalysisResults(items: List<ReceiptItem>) {
+        val json = Gson().toJson(items)
+        val file = File(filesDir, "receipt_analysis.json")
+        file.writeText(json)
+        Toast.makeText(this, "결과가 저장되었습니다.", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun getRealPathFromURI(uri: Uri): String {
+        val cursor = contentResolver.query(uri, null, null, null, null)
+        cursor?.moveToFirst()
+        val index = cursor?.getColumnIndex(MediaStore.Images.Media.DATA)
+        val path = cursor?.getString(index ?: 0)
+        cursor?.close()
+        return path ?: ""
     }
 }
