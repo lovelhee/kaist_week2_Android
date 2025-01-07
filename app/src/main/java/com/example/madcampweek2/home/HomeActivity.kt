@@ -21,6 +21,7 @@ import com.example.madcampweek2.data.RoomTag
 import com.example.madcampweek2.makeRoom.HostActivity
 import com.example.madcampweek2.network.ApiClient
 import com.example.madcampweek2.notification.NotificationActivity
+import com.example.madcampweek2.roomList.RoomListActivity
 import com.example.madcampweek2.room.RoomActivity
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.CoroutineScope
@@ -102,7 +103,7 @@ class HomeActivity : AppCompatActivity() {
 
         val layoutPay: LinearLayout = findViewById(R.id.layoutPay)
         layoutPay.setOnClickListener {
-            navigateToActivity(CheckActivity::class.java)
+            navigateToActivity(RoomListActivity::class.java)
         }
 
         val layoutReceipt: LinearLayout = findViewById(R.id.layoutReceipt)
