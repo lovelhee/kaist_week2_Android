@@ -1,11 +1,12 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    id("kotlin-kapt")
 }
 
 android {
     namespace = "com.example.madcampweek2"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.madcampweek2"
@@ -37,6 +38,16 @@ android {
 
 dependencies {
 
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    kapt("com.github.bumptech.glide:compiler:4.15.1")
+
+    implementation("com.squareup.retrofit2:retrofit:2.9.0") // Retrofit 라이브러리
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0") // Gson 변환기
+
+    // OkHttp (Optional - 네트워크 요청 로깅)
+    implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
+
+    implementation ("com.google.android.gms:play-services-auth:21.3.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
