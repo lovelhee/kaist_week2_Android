@@ -21,7 +21,9 @@ import com.example.madcampweek2.R
 import com.example.madcampweek2.home.HomeActivity
 import com.example.madcampweek2.network.ApiClient
 import com.example.madcampweek2.network.GetReceiptItemsResponse
+import com.example.madcampweek2.network.GetReceiptItemsWithCheckResponse
 import com.example.madcampweek2.network.ReceiptItemData
+import com.example.madcampweek2.network.ReceiptItemDataWithCheck
 import com.example.madcampweek2.network.ReceiptService
 import com.example.madcampweek2.network.ReceiptUpdate
 import com.example.madcampweek2.network.UpdateChecksRequest
@@ -32,10 +34,11 @@ import retrofit2.Response
 class CheckActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: ReceiptItemAdapter
+    private lateinit var adapter: ReceiptItemAdapterWithCheck
     private lateinit var btnComplete: Button
-    private var items: List<ReceiptItemData> = listOf()
-    private val checkedStates = mutableMapOf<Int, Int>()
+    private var checkedStates = mutableMapOf<Int, Boolean>()
+    private var roomId: Int = -1
+    private lateinit var userUuid: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,9 +65,12 @@ class CheckActivity : AppCompatActivity() {
             finish()
         }
 
-        val roomId = intent.getIntExtra("roomId", -1)
-        if (roomId == -1) {
-            Toast.makeText(this, "방 ID를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+        roomId = intent.getIntExtra("roomId", -1)
+        val sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+        userUuid = sharedPreferences.getString("user_uuid", null) ?: ""
+
+        if (roomId == -1 || userUuid.isEmpty()) {
+            Toast.makeText(this, "방 ID 또는 사용자 정보를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -72,7 +78,7 @@ class CheckActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.rvMenu)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        fetchReceiptItems(roomId)
+        fetchReceiptItemsWithCheckStatus()
 
         btnComplete = findViewById(R.id.btnComplete)
         btnComplete.setOnClickListener {
@@ -80,51 +86,43 @@ class CheckActivity : AppCompatActivity() {
         }
     }
 
-    private fun fetchReceiptItems(roomId: Int) {
-        val service = ApiClient.retrofit.create(ReceiptService::class.java)
-        service.getReceiptItems(roomId).enqueue(object : Callback<GetReceiptItemsResponse> {
-            override fun onResponse(
-                call: Call<GetReceiptItemsResponse>,
-                response: Response<GetReceiptItemsResponse>
-            ) {
-                if (response.isSuccessful && response.body()?.status == 200) {
-                    val items = response.body()?.data ?: emptyList()
-                    displayItems(items)
-                } else {
-                    Log.e("CheckActivity", "Error: ${response.errorBody()?.string()}")
-                    Toast.makeText(this@CheckActivity, "데이터를 불러오는 데 실패했습니다.", Toast.LENGTH_SHORT).show()
-                }
-            }
+//    private fun fetchReceiptItems(roomId: Int) {
+//        val service = ApiClient.retrofit.create(ReceiptService::class.java)
+//        service.getReceiptItems(roomId).enqueue(object : Callback<GetReceiptItemsResponse> {
+//            override fun onResponse(
+//                call: Call<GetReceiptItemsResponse>,
+//                response: Response<GetReceiptItemsResponse>
+//            ) {
+//                if (response.isSuccessful && response.body()?.status == 200) {
+//                    val items = response.body()?.data ?: emptyList()
+//                    Log.d("CheckActivity", "Fetched items: $items")
+//                    displayItems(items)
+//                } else {
+//                    Log.e("CheckActivity", "Error: ${response.errorBody()?.string()}")
+//                    Toast.makeText(this@CheckActivity, "데이터를 불러오는 데 실패했습니다.", Toast.LENGTH_SHORT).show()
+//                }
+//            }
+//
+//            override fun onFailure(call: Call<GetReceiptItemsResponse>, t: Throwable) {
+//                Log.e("CheckActivity", "Failure: ${t.message}")
+//                Toast.makeText(this@CheckActivity, "서버 연결 실패: ${t.message}", Toast.LENGTH_SHORT).show()
+//            }
+//        })
+//    }
 
-            override fun onFailure(call: Call<GetReceiptItemsResponse>, t: Throwable) {
-                Log.e("CheckActivity", "Failure: ${t.message}")
-                Toast.makeText(this@CheckActivity, "서버 연결 실패: ${t.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
-
-    private fun displayItems(items: List<ReceiptItemData>) {
-        adapter = ReceiptItemAdapter(items) { id, isChecked ->
-            checkedStates[id] = if (isChecked) 1 else 0
-        }
-        recyclerView.adapter = adapter
-    }
+//    private fun displayItems(items: List<ReceiptItemData>) {
+//        adapter = ReceiptItemAdapter(items) { id, isChecked ->
+//            Log.d("CheckActivity", "Item checked: id=$id, isChecked=$isChecked")
+//            checkedStates[id] = if (isChecked) 1 else 0
+//        }
+//        recyclerView.adapter = adapter
+//    }
 
     private fun saveCheckedStates() {
-        val sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-        val userUuid = sharedPreferences.getString("user_uuid", null)
-
-        if (userUuid == null) {
-            Toast.makeText(this, "사용자 정보를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
         val updates = checkedStates.map { (id, checked) ->
-            ReceiptUpdate(receiptItemId = id, checked = checked)
+            com.example.madcampweek2.network.ReceiptUpdate(receiptItemId = id, checked = if (checked) 1 else 0)
         }
-
         val body = UpdateChecksRequest(userUuid = userUuid, updates = updates)
-
         val service = ApiClient.retrofit.create(ReceiptService::class.java)
         service.updateChecks(body).enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
@@ -142,4 +140,38 @@ class CheckActivity : AppCompatActivity() {
             }
         })
     }
+
+    private fun fetchReceiptItemsWithCheckStatus() {
+        val service = ApiClient.retrofit.create(ReceiptService::class.java)
+        service.getReceiptItemsWithCheckStatus(roomId, userUuid)
+            .enqueue(object : Callback<GetReceiptItemsWithCheckResponse> {
+                override fun onResponse(
+                    call: Call<GetReceiptItemsWithCheckResponse>,
+                    response: Response<GetReceiptItemsWithCheckResponse>
+                ) {
+                    if (response.isSuccessful && response.body()?.status == 200) {
+                        val items = response.body()?.data ?: emptyList()
+                        displayItemsWithCheckStatus(items)
+                    } else {
+                        Log.e("CheckActivity", "Error: ${response.errorBody()?.string()}")
+                        Toast.makeText(this@CheckActivity, "데이터를 불러오는 데 실패했습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<GetReceiptItemsWithCheckResponse>, t: Throwable) {
+                    Log.e("CheckActivity", "Failure: ${t.message}")
+                    Toast.makeText(this@CheckActivity, "서버 연결 실패: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
+
+    private fun displayItemsWithCheckStatus(items: List<ReceiptItemDataWithCheck>) {
+        checkedStates = items.associate { it.id to (it.checked == 1) }.toMutableMap()
+        adapter = ReceiptItemAdapterWithCheck(items) { id, isChecked ->
+            checkedStates[id] = isChecked
+        }
+        recyclerView.adapter = adapter
+    }
+
+
 }

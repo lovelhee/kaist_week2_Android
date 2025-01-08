@@ -25,6 +25,12 @@ interface ReceiptService {
     @POST("/receipt/updateChecks")
     fun updateChecks(@Body body: UpdateChecksRequest): Call<Void>
 
+    @GET("/receipt/getReceiptItemsWithCheckStatus/{room_id}/{user_uuid}")
+    fun getReceiptItemsWithCheckStatus(
+        @Path("room_id") roomId: Int,
+        @Path("user_uuid") userUuid: String
+    ): Call<GetReceiptItemsWithCheckResponse>
+
 }
 
 data class CreateRoomRequest(
@@ -73,4 +79,17 @@ data class UpdateChecksRequest(
 data class ReceiptUpdate(
     val receiptItemId: Int,
     val checked: Int
+)
+
+data class ReceiptItemDataWithCheck(
+    val id: Int,          // API에서 고유 ID로 반환되는 필드
+    val itemName: String, // 메뉴 이름
+    val price: String,    // 가격
+    val checked: Int      // 체크 상태 (0: false, 1: true)
+)
+
+data class GetReceiptItemsWithCheckResponse(
+    val status: Int,
+    val msg: String,
+    val data: List<ReceiptItemDataWithCheck>
 )
