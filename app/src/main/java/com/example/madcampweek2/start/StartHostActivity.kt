@@ -82,7 +82,7 @@ class StartHostActivity : AppCompatActivity() {
                     val response = ApiClient.apiService.updateRoomStatus(requestBody) // roomId와 status 0 전달
                     withContext(Dispatchers.Main) {
                         if (response.isSuccessful) {
-                            Toast.makeText(this@StartHostActivity, "정산이 끝났습니다.", Toast.LENGTH_SHORT).show()
+                            // Toast.makeText(this@StartHostActivity, "정산이 끝났습니다.", Toast.LENGTH_SHORT).show()
                             // CompleteActivity로 이동
                             val intent = Intent(this@StartHostActivity, CompleteActivity::class.java)
                             startActivity(intent)

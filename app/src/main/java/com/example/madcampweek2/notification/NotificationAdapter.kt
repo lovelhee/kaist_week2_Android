@@ -9,7 +9,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.madcampweek2.R
 import com.example.madcampweek2.data.Notification
 
-class NotificationAdapter(private val notifications: List<Notification>) :
+class NotificationAdapter(
+    private val notifications: List<Notification>,
+    private val onItemClick: (Notification) -> Unit) :
     RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder>() {
 
     class NotificationViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -29,6 +31,11 @@ class NotificationAdapter(private val notifications: List<Notification>) :
         holder.ivIcon.setImageResource(notification.iconResId)
         holder.tvName.text = notification.name
         holder.tvContent.text = notification.content
+
+        // 클릭 리스너 설정
+        holder.itemView.setOnClickListener {
+            onItemClick(notification)
+        }
     }
 
     override fun getItemCount(): Int = notifications.size

@@ -6,3 +6,9 @@ data class ParticipantInStart(
     val amountOfMoney: String,
     val isPaid: Int
 )
+
+data class ReceiptItemInStart(
+    val itemName: String,
+    val price: String,
+    val checked: Int
+)

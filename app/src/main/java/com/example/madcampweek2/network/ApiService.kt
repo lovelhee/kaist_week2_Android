@@ -2,6 +2,7 @@ package com.example.madcampweek2.network
 
 import com.example.madcampweek2.data.ApiResponse
 import com.example.madcampweek2.data.ParticipantInStart
+import com.example.madcampweek2.data.ReceiptItemInStart
 import com.example.madcampweek2.data.ReceiptSummaryResponse
 import com.example.madcampweek2.data.RoomResponse
 import com.example.madcampweek2.data.UpdateRoomStatusRequest
@@ -25,4 +26,9 @@ interface ApiService {
     @GET("/rooms/getRoomParticipants/{roomId}")
     suspend fun getRoomParticipants(@Path("roomId") roomId: Int): Response<ApiResponse<List<ParticipantInStart>>>
 
+    @GET("/receipt/getReceiptItemsWithCheckStatus/{room_id}/{user_uuid}")
+    suspend fun getReceiptItemsWithCheckStatus(
+        @Path("room_id") roomId: Int,
+        @Path("user_uuid") userUuid: String
+    ): Response<ApiResponse<List<ReceiptItemInStart>>>
 }
