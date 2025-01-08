@@ -17,9 +17,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.madcampweek2.R
 import com.example.madcampweek2.calculate.CalculateActivity
 import com.example.madcampweek2.check.CheckActivity
+import com.example.madcampweek2.data.RoomTag
 import com.example.madcampweek2.makeRoom.HostActivity
 import com.example.madcampweek2.network.ApiClient
 import com.example.madcampweek2.notification.NotificationActivity
+import com.example.madcampweek2.room.RoomActivity
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -66,8 +68,6 @@ class HomeActivity : AppCompatActivity() {
         rvTitle.layoutManager = LinearLayoutManager(this)
         rvTitle.adapter = adapter
 
-        adapter.submitList(getReceiveData())
-
         fetchRoomData { hostedRooms, participatingRooms ->
             adapter.submitList(hostedRooms) // 기본값: 받을 돈
 
@@ -107,7 +107,7 @@ class HomeActivity : AppCompatActivity() {
 
         val layoutReceipt: LinearLayout = findViewById(R.id.layoutReceipt)
         layoutReceipt.setOnClickListener {
-            navigateToActivity(CalculateActivity::class.java)
+            navigateToActivity(RoomActivity::class.java) // 여기 수정했습니다... room 대기 화면으로 보내주기!
         }
 
         imgBtnNotifi.setOnClickListener {
@@ -117,14 +117,18 @@ class HomeActivity : AppCompatActivity() {
     }
 
     // 서버에서 데이터 가져오기
-    private fun fetchRoomData(onResult: (List<String>, List<String>) -> Unit) {
+    private fun fetchRoomData(onResult: (List<RoomTag>, List<RoomTag>) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = ApiClient.apiService.getRooms(userUuid)
                 if (response.isSuccessful && response.body() != null) {
                     val data = response.body()!!.data
-                    val hostedRooms = data.hostedRooms
-                    val participatingRooms = data.participatingRooms
+                    val hostedRooms = data.hostedRooms.map { room ->
+                        RoomTag(id = room.id, tag = "호스트", title = room.title)
+                    }
+                    val participatingRooms = data.participatingRooms.map { room ->
+                        RoomTag(id = room.id, tag = "참여자", title = room.title)
+                    }
 
                     // UI 업데이트
                     withContext(Dispatchers.Main) {
