@@ -19,7 +19,7 @@
         android:textSize="12sp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="45dp"
         android:layout_marginTop="8dp" />
 
     <!-- 텍스트와 아이콘을 포함한 LinearLayout -->
