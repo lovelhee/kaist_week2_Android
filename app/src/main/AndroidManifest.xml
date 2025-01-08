@@ -27,6 +27,9 @@
             android:name=".roomList.RoomListActivity"
             android:exported="false" />
         <activity
+            android:name=".room.RoomActivity"
+            android:exported="false" />
+        <activity
             android:name=".complete.CompleteActivity"
             android:exported="false" />
         <activity

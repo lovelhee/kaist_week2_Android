@@ -19,7 +19,6 @@ class RoomActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: RoomAdapter
-    private val userUuid = "1111" // 고정된 UUID 값
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +31,9 @@ class RoomActivity : AppCompatActivity() {
     }
 
     private fun fetchRooms() {
+        val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
+        val userUuid = sharedPreferences.getString("user_uuid", null)
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = ApiClient.apiService.getRooms(userUuid)

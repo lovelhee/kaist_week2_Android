@@ -8,7 +8,7 @@ import retrofit2.Response
 
 interface ApiService {
     @GET("/rooms/getRooms/{user_uuid}")
-    suspend fun getRooms(@Path("user_uuid") userUuid: String): Response<RoomResponse>
+    suspend fun getRooms(@Path("user_uuid") userUuid: String?): Response<RoomResponse>
 
     @GET("/receipt/getReceiptSummary/{room_id}")
     suspend fun getReceiptSummary(@Path("room_id") roomId: Int): Response<ReceiptSummaryResponse>

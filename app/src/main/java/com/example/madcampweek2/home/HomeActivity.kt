@@ -22,7 +22,6 @@ import com.example.madcampweek2.check.CheckActivity
 import com.example.madcampweek2.data.RoomTag
 import com.example.madcampweek2.makeRoom.HostActivity
 import com.example.madcampweek2.network.ApiClient
-import com.example.madcampweek2.network.ApiClient
 import com.example.madcampweek2.network.FindRoomIdsResponse
 import com.example.madcampweek2.network.RoomService
 import com.example.madcampweek2.notification.NotificationActivity
@@ -40,7 +39,6 @@ import retrofit2.Response
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var adapter: TitleAdapter
-    private val userUuid = "1111" // 고정된 UUID 값
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,6 +125,9 @@ class HomeActivity : AppCompatActivity() {
 
     // 서버에서 데이터 가져오기
     private fun fetchRoomData(onResult: (List<RoomTag>, List<RoomTag>) -> Unit) {
+        val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
+        val userUuid = sharedPreferences.getString("user_uuid", null)
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = ApiClient.apiService.getRooms(userUuid)
