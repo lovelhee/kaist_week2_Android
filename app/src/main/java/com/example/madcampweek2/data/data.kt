@@ -95,3 +95,8 @@ data class UserId(
     val uuid: String
 )
 
+data class ApiResponse<T>(
+    val status: Int,
+    val msg: String,
+    val data: T
+)

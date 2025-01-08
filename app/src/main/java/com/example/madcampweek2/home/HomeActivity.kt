@@ -125,8 +125,10 @@ class HomeActivity : AppCompatActivity() {
 
     // 서버에서 데이터 가져오기
     private fun fetchRoomData(onResult: (List<RoomTag>, List<RoomTag>) -> Unit) {
-        val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
-        val userUuid = sharedPreferences.getString("user_uuid", null)
+//        val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
+//        val userUuid = sharedPreferences.getString("user_uuid", null)
+
+        val userUuid = "1111"
 
         CoroutineScope(Dispatchers.IO).launch {
             try {

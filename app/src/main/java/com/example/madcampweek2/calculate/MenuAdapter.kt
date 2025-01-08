@@ -24,7 +24,14 @@ class MenuAdapter(private val menuList: List<MenuItem>) :
     override fun onBindViewHolder(holder: MenuViewHolder, position: Int) {
         val menuItem = menuList[position]
         holder.tvMenuName.text = menuItem.name
-        holder.tvMenuPrice.text = menuItem.price
+        // 숫자 포맷으로 ".00" 제거
+        val priceValue = menuItem.price.toDoubleOrNull() ?: 0.0
+        val formattedPrice = if (priceValue == priceValue.toInt().toDouble()) {
+            priceValue.toInt().toString() // 정수로 변환
+        } else {
+            priceValue.toString() // 소수점 유지
+        }
+        holder.tvMenuPrice.text = formattedPrice
     }
 
     override fun getItemCount(): Int = menuList.size

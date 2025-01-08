@@ -63,7 +63,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/rvFreinds"
+        android:id="@+id/rvFriends"
         tools:itemCount="3"
         app:layout_constraintTop_toBottomOf="@+id/tvContent"
         app:layout_constraintStart_toStartOf="parent"

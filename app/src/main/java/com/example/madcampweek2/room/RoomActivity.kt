@@ -2,6 +2,8 @@ package com.example.madcampweek2.room
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -9,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.madcampweek2.R
 import com.example.madcampweek2.calculate.CalculateHostActivity
 import com.example.madcampweek2.data.RoomTag
+import com.example.madcampweek2.home.HomeActivity
 import com.example.madcampweek2.network.ApiClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,12 +30,21 @@ class RoomActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.rvRoom)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
+        // ivback 클릭 이벤트 처리
+        val ivBack: ImageView = findViewById(R.id.ivback)
+        ivBack.setOnClickListener {
+            val intent = Intent(this, HomeActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+
         fetchRooms()
     }
 
     private fun fetchRooms() {
-        val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
-        val userUuid = sharedPreferences.getString("user_uuid", null)
+//        val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
+//        val userUuid = sharedPreferences.getString("user_uuid", null)
+        val userUuid = "1111"
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -57,6 +69,7 @@ class RoomActivity : AppCompatActivity() {
                                 // CalculateHostActivity로 이동
                                 val intent = Intent(this@RoomActivity, CalculateHostActivity::class.java)
                                 intent.putExtra("roomId", room.id) // roomId 전달
+                                Log.d("CalculateHostActivity", "Give roomId: ${room.id}")
                                 startActivity(intent)
                             } else {
                                 Toast.makeText(
