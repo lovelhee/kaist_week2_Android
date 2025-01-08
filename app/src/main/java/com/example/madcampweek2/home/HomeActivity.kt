@@ -19,13 +19,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.madcampweek2.R
 import com.example.madcampweek2.calculate.CalculateActivity
 import com.example.madcampweek2.check.CheckActivity
+import com.example.madcampweek2.data.RoomTag
 import com.example.madcampweek2.makeRoom.HostActivity
 import com.example.madcampweek2.network.ApiClient
 import com.example.madcampweek2.network.FindRoomIdsResponse
 import com.example.madcampweek2.network.RoomService
 import com.example.madcampweek2.notification.NotificationActivity
 import com.example.madcampweek2.roomList.RoomListActivity
+import com.example.madcampweek2.room.RoomActivity
 import com.google.android.material.tabs.TabLayout
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -33,6 +39,7 @@ import retrofit2.Response
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var adapter: TitleAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -68,22 +75,24 @@ class HomeActivity : AppCompatActivity() {
         rvTitle.layoutManager = LinearLayoutManager(this)
         rvTitle.adapter = adapter
 
-        adapter.submitList(getReceiveData())
+        fetchRoomData { hostedRooms, participatingRooms ->
+            adapter.submitList(hostedRooms) // 기본값: 받을 돈
 
-        tabLayout.addTab(tabLayout.newTab().setText("받을 돈"))
-        tabLayout.addTab(tabLayout.newTab().setText("줄 돈"))
+            tabLayout.addTab(tabLayout.newTab().setText("받을 돈"))
+            tabLayout.addTab(tabLayout.newTab().setText("줄 돈"))
 
-        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                when (tab?.text) {
-                    "받을 돈" -> adapter.submitList(getReceiveData())
-                    "줄 돈" -> adapter.submitList(getPayData())
+            tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab?) {
+                    when (tab?.text) {
+                        "받을 돈" -> adapter.submitList(hostedRooms)
+                        "줄 돈" -> adapter.submitList(participatingRooms)
+                    }
                 }
-            }
 
-            override fun onTabUnselected(tab: TabLayout.Tab?) {}
-            override fun onTabReselected(tab: TabLayout.Tab?) {}
-        })
+                override fun onTabUnselected(tab: TabLayout.Tab?) {}
+                override fun onTabReselected(tab: TabLayout.Tab?) {}
+            })
+        }
         // 여기까지
 
         // 화면 이동
@@ -105,13 +114,49 @@ class HomeActivity : AppCompatActivity() {
 
         val layoutReceipt: LinearLayout = findViewById(R.id.layoutReceipt)
         layoutReceipt.setOnClickListener {
-            navigateToActivity(CalculateActivity::class.java)
+            navigateToActivity(RoomActivity::class.java) // 여기 수정했습니다... room 대기 화면으로 보내주기!
         }
 
         imgBtnNotifi.setOnClickListener {
             navigateToActivity(NotificationActivity::class.java)
         }
         // 여기까지
+    }
+
+    // 서버에서 데이터 가져오기
+    private fun fetchRoomData(onResult: (List<RoomTag>, List<RoomTag>) -> Unit) {
+        val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
+        val userUuid = sharedPreferences.getString("user_uuid", null)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = ApiClient.apiService.getRooms(userUuid)
+                if (response.isSuccessful && response.body() != null) {
+                    val data = response.body()!!.data
+                    val hostedRooms = data.hostedRooms.map { room ->
+                        RoomTag(id = room.id, tag = "호스트", title = room.title)
+                    }
+                    val participatingRooms = data.participatingRooms.map { room ->
+                        RoomTag(id = room.id, tag = "참여자", title = room.title)
+                    }
+
+                    // UI 업데이트
+                    withContext(Dispatchers.Main) {
+                        onResult(hostedRooms, participatingRooms)
+                    }
+                } else {
+                    // 실패 처리
+                    withContext(Dispatchers.Main) {
+                        onResult(emptyList(), emptyList())
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    onResult(emptyList(), emptyList())
+                }
+            }
+        }
     }
 
     // 화면 이동
