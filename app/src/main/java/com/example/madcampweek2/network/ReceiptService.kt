@@ -22,6 +22,9 @@ interface ReceiptService {
     @GET("/receipt/getReceiptItems/{room_id}")
     fun getReceiptItems(@Path("room_id") roomId: Int): Call<GetReceiptItemsResponse>
 
+    @POST("/receipt/updateChecks")
+    fun updateChecks(@Body body: UpdateChecksRequest): Call<Void>
+
 }
 
 data class CreateRoomRequest(
@@ -60,4 +63,14 @@ data class ReceiptItemData(
     val itemName: String,
     val details: String,
     val price: Int
+)
+
+data class UpdateChecksRequest(
+    val userUuid: String,
+    val updates: List<ReceiptUpdate>
+)
+
+data class ReceiptUpdate(
+    val receiptItemId: Int,
+    val checked: Int
 )
