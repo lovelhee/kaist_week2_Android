@@ -1,260 +1,258 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".makeRoom.HostActivity">
 
-    <Toolbar
-        android:elevation="3dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:id="@+id/toolBar"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" >
+        android:layout_height="wrap_content">
 
-        <ImageView
-            android:layout_width="115dp"
-            android:layout_height="29dp"
-            android:src="@drawable/img_pay_check"
-            android:layout_gravity="center"
-            android:id="@+id/ivLogo"/>
+        <Toolbar
+            android:elevation="3dp"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:id="@+id/toolBar"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" >
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="start"
-            android:layout_marginStart="20dp"
-            android:src="@drawable/ic_back"
-            android:id="@+id/ivback"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="@android:color/transparent"/>
-    </Toolbar>
+            <ImageView
+                android:layout_width="115dp"
+                android:layout_height="29dp"
+                android:src="@drawable/img_pay_check"
+                android:layout_gravity="center"
+                android:id="@+id/ivLogo"/>
 
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="35dp"
-        android:layout_marginTop="20dp"
-        android:text="방 제목"
-        android:textColor="@color/black"
-        android:textSize="25sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolBar" />
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="start"
+                android:layout_marginStart="20dp"
+                android:src="@drawable/ic_back"
+                android:id="@+id/ivback"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@android:color/transparent"/>
+        </Toolbar>
 
-    <EditText
-        android:id="@+id/etTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="35dp"
-        android:textSize="15sp"
-        android:layout_marginEnd="35dp"
-        android:hint="방 제목 입력"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
-
-    <TextView
-        android:id="@+id/tvInvite"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="35dp"
-        android:text="초대할 친구"
-        android:textColor="@color/black"
-        android:textSize="25sp"
-        android:layout_marginTop="30dp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/etTitle" />
-
-    <LinearLayout
-        android:id="@+id/invitedFriendsLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="35dp"
-        android:layout_marginEnd="35dp"
-        android:layout_marginTop="10dp"
-        android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@+id/tvInvite"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/layoutInvite"
-        app:layout_constraintTop_toBottomOf="@+id/invitedFriendsLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginStart="35dp"
-        android:orientation="horizontal"
-        android:layout_marginEnd="35dp">
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="35dp"
+            android:layout_marginTop="20dp"
+            android:text="방 제목"
+            android:textColor="@color/black"
+            android:textSize="25sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toolBar" />
 
         <EditText
+            android:id="@+id/etTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="35dp"
+            android:textSize="15sp"
+            android:layout_marginEnd="35dp"
+            android:hint="방 제목 입력"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
+
+        <TextView
+            android:id="@+id/tvInvite"
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="35dp"
+            android:text="초대할 친구"
+            android:textColor="@color/black"
+            android:textSize="25sp"
+            android:layout_marginTop="30dp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/etTitle" />
+
+        <LinearLayout
+            android:id="@+id/invitedFriendsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="35dp"
+            android:layout_marginEnd="35dp"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@+id/tvInvite"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <EditText
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:textSize="15sp"
             android:id="@+id/etInvite"
+            android:layout_marginStart="35dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/invitedFriendsLayout"
             android:hint="초대할 친구 입력"/>
 
         <Button
-            android:layout_marginStart="140dp"
             android:id="@+id/btnInvite"
+            android:layout_marginEnd="35dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="초대"
-            android:textSize="15sp"
             android:backgroundTint="@color/main_purple"
+            android:gravity="center"
+            android:text="초대"
             android:textColor="@android:color/white"
-            android:gravity="center" />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/tvCamera"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="35dp"
-        android:text="영수증 촬영"
-        android:textColor="@color/black"
-        android:textSize="25sp"
-        android:layout_marginTop="30dp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layoutInvite" />
-
-    <ImageView
-        android:id="@+id/ivReceipt"
-        android:layout_width="115dp"
-        android:layout_height="115dp"
-        android:layout_marginStart="35dp"
-        android:layout_marginEnd="35dp"
-        android:layout_marginTop="10dp"
-        android:visibility="visible"
-        android:scaleType="centerCrop"
-        android:background="@drawable/rounded_camera_background"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvCamera" />
-
-    <Button
-        android:id="@+id/btnCamera"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/main_purple"
-        android:text="영수증 업로드"
-        android:textSize="15sp"
-        android:layout_marginStart="35dp"
-        android:layout_marginEnd="35dp"
-        android:layout_marginTop="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ivReceipt" />
-
-    <Button
-        android:id="@+id/btnUpload"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/main_purple"
-        android:text="영수증 분석하기"
-        android:textSize="15sp"
-        android:visibility="gone"
-        android:layout_marginStart="35dp"
-        android:layout_marginEnd="35dp"
-        android:layout_marginTop="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ivReceipt" />
-
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="35dp"
-        android:layout_marginTop="90dp"
-        android:orientation="horizontal"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ivReceipt">
+            android:textSize="15sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/invitedFriendsLayout" />
 
         <TextView
+            android:id="@+id/tvCamera"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="영수증 확인"
+            android:layout_marginStart="35dp"
+            android:text="영수증 촬영"
             android:textColor="@color/black"
             android:textSize="25sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="30dp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnInvite" />
+
+        <ImageView
+            android:id="@+id/ivReceipt"
+            android:layout_width="115dp"
+            android:layout_height="115dp"
+            android:layout_marginStart="35dp"
+            android:layout_marginEnd="35dp"
+            android:layout_marginTop="10dp"
+            android:visibility="visible"
+            android:scaleType="centerCrop"
+            android:background="@drawable/rounded_camera_background"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvCamera" />
+
+        <Button
+            android:id="@+id/btnCamera"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/main_purple"
+            android:text="영수증 업로드"
+            android:textSize="15sp"
+            android:layout_marginStart="35dp"
+            android:layout_marginEnd="35dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivReceipt" />
+
+        <Button
+            android:id="@+id/btnUpload"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/main_purple"
+            android:text="영수증 분석하기"
+            android:textSize="15sp"
+            android:visibility="gone"
+            android:layout_marginStart="35dp"
+            android:layout_marginEnd="35dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivReceipt" />
+
+        <LinearLayout
+            android:id="@+id/linearLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="35dp"
+            android:layout_marginTop="90dp"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivReceipt">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="영수증 확인"
+                android:textColor="@color/black"
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:gravity="center_vertical"
+                android:text="잘못된 부분이 있다면 수정하세요."
+                android:textColor="#C793FF"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="메뉴명"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="40dp"
+            android:textSize="15sp"
+            android:textColor="@color/black"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:gravity="center_vertical"
-            android:text="잘못된 부분이 있다면 수정하세요."
-            android:textColor="#C793FF"
-            android:textSize="12sp" />
+            android:text="가격"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="40dp"
+            android:textSize="15sp"
+            android:textColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
-    </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:id="@+id/viewLine"
+            android:background="@drawable/shape_line"
+            android:layout_marginEnd="32dp"
+            android:layout_marginStart="32dp"
+            app:layout_constraintTop_toBottomOf="@+id/tvMenu"
+            android:layout_marginTop="10dp"/>
 
-    <TextView
-        android:id="@+id/tvMenu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="메뉴명"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="40dp"
-        android:textSize="15sp"
-        android:textColor="@color/black"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="35dp"
+            android:layout_marginEnd="35dp"
+            tools:listitem="@layout/item_menu"
+            app:layout_constraintTop_toBottomOf="@+id/viewLine"
+            tools:itemCount="3" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="가격"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="40dp"
-        android:textSize="15sp"
-        android:textColor="@color/black"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+        <Button
+            android:id="@+id/btnComplete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:layout_marginTop="30dp"
+            android:backgroundTint="@color/main_purple"
+            android:padding="10dp"
+            android:text="완료"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rvMenu" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:id="@+id/viewLine"
-        android:background="@drawable/shape_line"
-        android:layout_marginEnd="32dp"
-        android:layout_marginStart="32dp"
-        app:layout_constraintTop_toBottomOf="@+id/tvMenu"
-        android:layout_marginTop="10dp"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvMenu"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="35dp"
-        android:layout_marginEnd="35dp"
-        tools:listitem="@layout/item_menu"
-        app:layout_constraintTop_toBottomOf="@+id/viewLine"
-        tools:itemCount="3" />
-
-    <Button
-        android:id="@+id/btnComplete"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="20dp"
-        android:layout_marginTop="30dp"
-        android:backgroundTint="@color/main_purple"
-        android:padding="10dp"
-        android:text="완료"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rvMenu" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>
