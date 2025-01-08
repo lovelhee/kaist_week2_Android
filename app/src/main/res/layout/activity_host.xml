@@ -163,9 +163,40 @@
             android:layout_marginStart="35dp"
             android:layout_marginEnd="35dp"
             android:layout_marginTop="10dp"
+            android:enabled="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ivReceipt" />
+
+        <LinearLayout
+            android:id="@+id/loadingLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone"
+            android:layout_marginTop="100dp"
+            app:layout_constraintTop_toBottomOf="@+id/btnCamera"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                style="?android:attr/progressBarStyleLarge" />
+
+            <TextView
+                android:id="@+id/tvLoading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="분석중..."
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+        </LinearLayout>
+
 
         <LinearLayout
             android:id="@+id/linearLayout"
@@ -175,7 +206,7 @@
             android:layout_marginTop="90dp"
             android:orientation="horizontal"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ivReceipt">
+            app:layout_constraintTop_toBottomOf="@+id/loadingLayout">
 
             <TextView
                 android:layout_width="wrap_content"

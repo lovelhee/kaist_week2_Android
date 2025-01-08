@@ -19,6 +19,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -44,6 +45,7 @@ import java.io.File
 
 class HostActivity : AppCompatActivity() {
 
+    private lateinit var loadingLayout: LinearLayout
     private lateinit var btnCamera: Button
     private lateinit var btnUpload: Button
     private lateinit var ivReceipt: ImageView
@@ -91,11 +93,15 @@ class HostActivity : AppCompatActivity() {
 
         btnUpload.setOnClickListener {
             uploadReceiptImage()
+            btnUpload.isEnabled = false
+            btnUpload.backgroundTintList = ContextCompat.getColorStateList(this, android.R.color.darker_gray)
         }
 
         btnComplete.setOnClickListener {
             createRoom()
         }
+
+        loadingLayout = findViewById(R.id.loadingLayout)
     }
 
     private fun showImageSelectionDialog() {
@@ -169,6 +175,8 @@ class HostActivity : AppCompatActivity() {
     private fun uploadReceiptImage() {
         imageUrl?.let { imageUrlString ->
             // String을 Uri로 변환
+            loadingLayout.visibility = View.VISIBLE
+
             val uri = Uri.parse(imageUrlString)
 
             // Uri를 File 객체로 변환
@@ -187,6 +195,7 @@ class HostActivity : AppCompatActivity() {
                     call: Call<AnalyzeReceiptResponse>,
                     response: Response<AnalyzeReceiptResponse>
                 ) {
+                    loadingLayout.visibility = View.GONE
                     if (response.isSuccessful) {
                         response.body()?.data?.let { data ->
                             showAnalysisResults(data.items, data.total_price)
@@ -204,6 +213,7 @@ class HostActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(call: Call<AnalyzeReceiptResponse>, t: Throwable) {
+                    loadingLayout.visibility = View.GONE
                     Toast.makeText(this@HostActivity, "분석 실패: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
@@ -372,7 +382,6 @@ class HostActivity : AppCompatActivity() {
                 Log.d("HostActivity", "Response Code: ${response.code()}, Body: ${response.body()}")
                 if (response.isSuccessful && response.body()?.status == 201) {
                     val roomId = response.body()?.data?.roomId
-                    Toast.makeText(this@HostActivity, "방이 성공적으로 생성되었습니다. 방 ID: $roomId", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this@HostActivity, CheckActivity::class.java).apply {
                         putExtra("roomId", roomId)
                     }
