@@ -18,12 +18,19 @@ import com.example.madcampweek2.R
 import com.example.madcampweek2.calculate.CalculateActivity
 import com.example.madcampweek2.check.CheckActivity
 import com.example.madcampweek2.makeRoom.HostActivity
+import com.example.madcampweek2.network.ApiClient
 import com.example.madcampweek2.notification.NotificationActivity
 import com.google.android.material.tabs.TabLayout
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var adapter: TitleAdapter
+    private val userUuid = "1111" // 고정된 UUID 값
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -61,20 +68,24 @@ class HomeActivity : AppCompatActivity() {
 
         adapter.submitList(getReceiveData())
 
-        tabLayout.addTab(tabLayout.newTab().setText("받을 돈"))
-        tabLayout.addTab(tabLayout.newTab().setText("줄 돈"))
+        fetchRoomData { hostedRooms, participatingRooms ->
+            adapter.submitList(hostedRooms) // 기본값: 받을 돈
 
-        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                when (tab?.text) {
-                    "받을 돈" -> adapter.submitList(getReceiveData())
-                    "줄 돈" -> adapter.submitList(getPayData())
+            tabLayout.addTab(tabLayout.newTab().setText("받을 돈"))
+            tabLayout.addTab(tabLayout.newTab().setText("줄 돈"))
+
+            tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab?) {
+                    when (tab?.text) {
+                        "받을 돈" -> adapter.submitList(hostedRooms)
+                        "줄 돈" -> adapter.submitList(participatingRooms)
+                    }
                 }
-            }
 
-            override fun onTabUnselected(tab: TabLayout.Tab?) {}
-            override fun onTabReselected(tab: TabLayout.Tab?) {}
-        })
+                override fun onTabUnselected(tab: TabLayout.Tab?) {}
+                override fun onTabReselected(tab: TabLayout.Tab?) {}
+            })
+        }
         // 여기까지
 
         // 화면 이동
@@ -103,6 +114,35 @@ class HomeActivity : AppCompatActivity() {
             navigateToActivity(NotificationActivity::class.java)
         }
         // 여기까지
+    }
+
+    // 서버에서 데이터 가져오기
+    private fun fetchRoomData(onResult: (List<String>, List<String>) -> Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = ApiClient.apiService.getRooms(userUuid)
+                if (response.isSuccessful && response.body() != null) {
+                    val data = response.body()!!.data
+                    val hostedRooms = data.hostedRooms
+                    val participatingRooms = data.participatingRooms
+
+                    // UI 업데이트
+                    withContext(Dispatchers.Main) {
+                        onResult(hostedRooms, participatingRooms)
+                    }
+                } else {
+                    // 실패 처리
+                    withContext(Dispatchers.Main) {
+                        onResult(emptyList(), emptyList())
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    onResult(emptyList(), emptyList())
+                }
+            }
+        }
     }
 
     // 화면 이동
