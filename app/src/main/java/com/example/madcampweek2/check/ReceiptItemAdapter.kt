@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.madcampweek2.R
 import com.example.madcampweek2.network.ReceiptItemData
 
-class ReceiptItemAdapter(private val items: List<ReceiptItemData>) :
+class ReceiptItemAdapter(private val items: List<ReceiptItemData>, private val onCheckedChange: (Int, Boolean) -> Unit) :
     RecyclerView.Adapter<ReceiptItemAdapter.ReceiptItemViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReceiptItemViewHolder {
@@ -23,6 +23,10 @@ class ReceiptItemAdapter(private val items: List<ReceiptItemData>) :
         holder.tvMenuName.text = item.itemName
         holder.tvMenuPrice.text = "${item.price} 원"
         holder.checkBox.isChecked = false
+
+        holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
+            onCheckedChange(item.id, isChecked)
+        }
     }
 
     override fun getItemCount(): Int = items.size

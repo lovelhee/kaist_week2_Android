@@ -4,10 +4,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -18,9 +20,15 @@ import com.example.madcampweek2.R
 import com.example.madcampweek2.calculate.CalculateActivity
 import com.example.madcampweek2.check.CheckActivity
 import com.example.madcampweek2.makeRoom.HostActivity
+import com.example.madcampweek2.network.ApiClient
+import com.example.madcampweek2.network.FindRoomIdsResponse
+import com.example.madcampweek2.network.RoomService
 import com.example.madcampweek2.notification.NotificationActivity
 import com.example.madcampweek2.roomList.RoomListActivity
 import com.google.android.material.tabs.TabLayout
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class HomeActivity : AppCompatActivity() {
 
@@ -92,7 +100,7 @@ class HomeActivity : AppCompatActivity() {
 
         val layoutPay: LinearLayout = findViewById(R.id.layoutPay)
         layoutPay.setOnClickListener {
-            navigateToActivity(RoomListActivity::class.java)
+            fetchUserUuidAndNavigateToCheckActivity()
         }
 
         val layoutReceipt: LinearLayout = findViewById(R.id.layoutReceipt)
@@ -120,5 +128,51 @@ class HomeActivity : AppCompatActivity() {
     // 더미데이터
     private fun getPayData(): List<String> {
         return listOf("줄 돈 항목 1", "줄 돈 항목 2", "줄 돈 항목 3", "줄 돈 항목 4", "줄 돈 항목 5")
+    }
+
+    private fun fetchUserUuidAndNavigateToCheckActivity() {
+        val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
+        val userUuid = sharedPreferences.getString("user_uuid", null)
+
+        if (userUuid == null) {
+            Toast.makeText(this, "사용자 정보를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+            return
+        } else {
+            Log.d("HomeActivity", "사용자 UUID: $userUuid")
+        }
+
+        // 최근 방 ID를 조회하는 API 요청
+        val roomService = ApiClient.retrofit.create(RoomService::class.java)
+        roomService.findRoomIds(userUuid).enqueue(object : Callback<FindRoomIdsResponse> {
+            override fun onResponse(call: Call<FindRoomIdsResponse>, response: Response<FindRoomIdsResponse>) {
+                Log.d("HomeActivity", "Response Code: ${response.code()}")
+                Log.d("HomeActivity", "Response Body: ${response.body()}")
+
+                if (response.isSuccessful) {
+                    val roomIds = response.body()?.data?.roomIds ?: emptyList()
+                    if (roomIds.isNotEmpty()) {
+                        val recentRoomId = roomIds.maxOrNull() // 가장 큰 ID 선택
+                        if (recentRoomId != null) {
+                            // CheckActivity로 이동하며 roomId 전달
+                            val intent = Intent(this@HomeActivity, CheckActivity::class.java)
+                            intent.putExtra("roomId", recentRoomId)
+                            startActivity(intent)
+                        } else {
+                            Toast.makeText(this@HomeActivity, "최근 방 정보를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(this@HomeActivity, "사용자가 속한 방이 없습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Log.e("HomeActivity", "방 조회 실패: ${response.errorBody()?.string()}")
+                    Toast.makeText(this@HomeActivity, "방 정보를 가져오는 데 실패했습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<FindRoomIdsResponse>, t: Throwable) {
+                Log.e("HomeActivity", "네트워크 오류: ${t.message}")
+                Toast.makeText(this@HomeActivity, "서버 연결 실패: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }
